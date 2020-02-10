@@ -44,7 +44,7 @@ public class DepreRiskExpertSystem {
                 AnswerRequest[] answers = gson.fromJson(message, AnswerRequest[].class);
                 System.out.println(message);
                 for (int i = 0; i < answers.length; i++) {
-                    System.out.println(answers[i].getAnswer());
+                    System.out.println(answers[i].getAnswers());
                 }
             }
         } catch (IOException ex) {

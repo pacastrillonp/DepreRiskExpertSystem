@@ -12,66 +12,29 @@ import java.util.Objects;
  *
  * @author pactr
  */
-public class AnswerRequest implements Serializable {
-    private int id ;
-    private String answer;
+public class AnswerRequest {
+
+    private String answers;
+    private int answersId;
 
     public AnswerRequest() {
     }
 
-    
-    
-    public AnswerRequest(int id, String answer) {
-        this.id = id;
-        this.answer = answer;
-    }
-    
-    
-
-    public int getId() {
-        return id;
+    public String getAnswers() {
+        return answers;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setAnswers(String answers) {
+        this.answers = answers;
     }
 
-    public String getAnswer() {
-        return answer;
+    public int getAnswersId() {
+        return answersId;
     }
 
-    public void setAnswer(String answer) {
-        this.answer = answer;
+    public void setAnswersId(int answersId) {
+        this.answersId = answersId;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 47 * hash + this.id;
-        hash = 47 * hash + Objects.hashCode(this.answer);
-        return hash;
-    }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final AnswerRequest other = (AnswerRequest) obj;
-        if (this.id != other.id) {
-            return false;
-        }
-        if (!Objects.equals(this.answer, other.answer)) {
-            return false;
-        }
-        return true;
-    }
-    
-    
 }
