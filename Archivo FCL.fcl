@@ -1,0 +1,80 @@
+// Block definition (there may be more than one block per file)
+FUNCTION_BLOCK nivelDeRiesgo
+
+// Define input variables
+VAR_INPUT
+    puntajePrueba : REAL;
+    edad : REAL;
+    intentosDeSuicidio : REAL;    
+END_VAR
+
+// Define output variable
+VAR_OUTPUT
+    nivelDeRiesgo : REAL;
+END_VAR
+
+// Fuzzify input variable 'puntajePrueba'
+FUZZIFY puntajePrueba
+    TERM muy_bajo := (0, 1) (13, 1) (16,0) ; 
+    TERM bajo := (11, 0) (14,1) (19,1) (22, 0);
+    TERM medio := (17,0)(20, 1) (28,1) (31, 0);
+    TERM alto := (28,0)(29, 1) (63, 1);
+END_FUZZIFY
+
+// Fuzzify input variable 'edad'
+FUZZIFY edad
+    TERM menor_de_edad := (0, 1) (17, 1) (18,0) ; 
+    TERM adulto_joven := (17, 0) (18,1) (30,1) (40,0);
+    TERM adulto := (30, 0) (40,1) (60,0);
+    TERM adulto_mayor := (50,0) (60, 1) (100, 1);
+END_FUZZIFY
+
+// Fuzzify input variable 'intentosDeSuicidio'
+FUZZIFY intentosDeSuicidio
+    TERM ninguno := (0, 1) (1, 0) ; 
+    TERM uno := (0, 0) (1,1) (2,0);
+    TERM varios := (1,0)(2, 1)(5,1);
+END_FUZZIFY
+
+// Defzzzify output variable 'nivelDeRiesgo'
+DEFUZZIFY nivelDeRiesgo
+    TERM bajo := (0,1) (9,1) (11,0);
+    TERM medio := (9,0) (11,1) (19,1) (21,0);
+    TERM alto := (19,0) (21,1) (30,1);
+    // Use 'Center Of Gravity' defuzzification method
+    METHOD : COG;
+    // Default value is 0 (if no rule activates defuzzifier)
+    DEFAULT := 0;
+END_DEFUZZIFY
+
+RULEBLOCK No1
+    // Use 'min' for 'and' (also implicit use 'max'
+    // for 'or' to fulfill DeMorgan's Law)
+    AND : MIN;
+    ACT : MIN;  // Use 'min' activation method
+    ACCU : MAX; // Use 'max' accumulation method
+
+	RULE 1 : IF puntajePrueba IS alto
+                THEN nivelDeRiesgo IS alto;
+    RULE 2 : IF puntajePrueba IS muy_bajo
+                THEN nivelDeRiesgo IS bajo;            
+    RULE 3 : IF puntajePrueba IS medio AND edad IS menor_de_edad
+                THEN nivelDeRiesgo IS alto;           
+    RULE 4 : IF intentosDeSuicidio IS varios
+                THEN nivelDeRiesgo IS alto;         
+    RULE 5 : IF puntajePrueba IS medio AND intentosDeSuicidio IS uno
+                THEN nivelDeRiesgo IS alto; 
+    RULE 6 : IF edad IS menor_de_edad AND intentosDeSuicidio IS uno
+                THEN nivelDeRiesgo IS alto; 
+    RULE 7 : IF edad IS menor_de_edad AND intentosDeSuicidio IS varios
+                THEN nivelDeRiesgo IS alto; 
+    RULE 8 : IF puntajePrueba IS bajo AND edad IS adulto_joven OR edad IS adulto 
+                THEN nivelDeRiesgo IS bajo; 
+    RULE 9 : IF puntajePrueba IS bajo AND edad IS adulto_mayor
+                THEN nivelDeRiesgo IS medio; 
+    RULE 10 : IF puntajePrueba IS medio AND edad IS adulto_joven
+                THEN nivelDeRiesgo IS bajo;
+    
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
