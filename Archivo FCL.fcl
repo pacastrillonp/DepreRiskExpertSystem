@@ -72,7 +72,7 @@ RULEBLOCK No1
                 THEN nivelDeRiesgo IS bajo; 
     RULE 9 : IF puntajePrueba IS bajo AND edad IS adulto_mayor
                 THEN nivelDeRiesgo IS medio; 
-    RULE 9 : IF puntajePrueba IS medio AND edad IS adulto_joven
+    RULE 10 : IF puntajePrueba IS medio AND edad IS adulto_joven
                 THEN nivelDeRiesgo IS bajo;
     
 END_RULEBLOCK
