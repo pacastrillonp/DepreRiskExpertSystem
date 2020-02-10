@@ -5,11 +5,13 @@
  */
 package depreriskexpertsystem;
 
+import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +39,13 @@ public class DepreRiskExpertSystem {
                 inputStreamReader = new InputStreamReader(socket.getInputStream());
                 bufferedReader = new BufferedReader(inputStreamReader);
                 String message = bufferedReader.readLine();
+
+                Gson gson = new Gson();
+                AnswerRequest[] answers = gson.fromJson(message, AnswerRequest[].class);
                 System.out.println(message);
+                for (int i = 0; i < answers.length; i++) {
+                    System.out.println(answers[i].getAnswer());
+                }
             }
         } catch (IOException ex) {
             ex.printStackTrace();
