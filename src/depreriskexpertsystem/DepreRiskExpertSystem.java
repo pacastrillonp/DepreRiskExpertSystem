@@ -18,6 +18,16 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import jess.ConsolePanel;
+import jess.Deffacts;
+import jess.Defrule;
+import jess.Deftemplate;
+import jess.Fact;
+import jess.JessException;
+import jess.PrettyPrinter;
+import jess.RU;
+import jess.Rete;
+import jess.Value;
 
 /**
  *
@@ -54,7 +64,6 @@ public class DepreRiskExpertSystem {
                     fuzzyLogic();
                 }
             }
-
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -74,6 +83,7 @@ public class DepreRiskExpertSystem {
         // Set inputs
         edad = Integer.parseInt(JOptionPane.showInputDialog("Por favor, ingrese su edad"));
         intentosSuicidio = Integer.parseInt(JOptionPane.showInputDialog("Por favor, ingrese el numero de intentos de suicidio"));
+        int horasSueno = Integer.parseInt(JOptionPane.showInputDialog("Por favor, ingrese el numero de horas de sueno"));
         fis.setVariable("puntajePrueba", message);
         fis.setVariable("edad", edad);
         fis.setVariable("intentosDeSuicidio", intentosSuicidio);
@@ -84,13 +94,63 @@ public class DepreRiskExpertSystem {
         // Show
         JFuzzyChart.get().chart(fis.getFunctionBlock("nivelDeRiesgo"));
 
-        Double x = fis.getVariable("nivelDeRiesgo").getLatestDefuzzifiedValue();
-        System.err.println("Para los valores de salida el grado de pertenencia es: " + x);
+        Double nivelDeRiesgo = fis.getVariable("nivelDeRiesgo").getLatestDefuzzifiedValue();
+        System.err.println("Para los valores de salida el grado de pertenencia es: " + nivelDeRiesgo);
+
+        try {
+            expertSystem(nivelDeRiesgo.intValue(), horasSueno);
+        } catch (JessException ex) {
+            Logger.getLogger(DepreRiskExpertSystem.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         // Show rules
         for (Rule r : fis.getFunctionBlock("nivelDeRiesgo").getFuzzyRuleBlock("No1").getRules()) {
             System.out.println(r);
         }
+
+    }
+
+    public static void expertSystem(int nivelRiesgoLD, int horasSuenoLD) throws JessException {
+        Rete rete = new Rete();
+        rete.batch("Sistema experto.CLP");
+
+        ConsolePanel c = new ConsolePanel(rete);
+        interfaz a = new interfaz(c);
+
+        Deffacts hechosIniciales = new Deffacts("hechosini", null, rete);
+        Fact f = new Fact("usuario", rete);
+        f.setSlotValue("nivelRiesgo", new Value(nivelRiesgoLD, RU.INTEGER));
+        f.setSlotValue("horasSueno", new Value(horasSuenoLD, RU.INTEGER));
+        hechosIniciales.addFact(f);
+        rete.addDeffacts(hechosIniciales);
+
+        rete.reset();
+
+        rete.executeCommand("(assert (usuario\n"
+                + "			(nivelRiesgo " + nivelRiesgoLD + ")\n"
+                + "			(horasSueno " + horasSuenoLD + ")))");
+
+        
+        System.out.println(new PrettyPrinter(hechosIniciales));
+
+        rete.executeCommand("(defrule saludo\n"
+                + "	(declare (salience 10))	\n"
+                + "	=>\n"
+                + "	(printout t \"Hola, este es el sistema Depre IA, ahora te daremos algunas recomendacines basandonos en el nivel de riesgo que obtuviste en el cuestionario.\" crlf)\n"
+                + "	(assert (ingresarDatos))\n"
+                + ")");
+        Defrule regla = (Defrule) rete.findDefrule("saludo");
+        System.out.println(new PrettyPrinter(regla));
+        Defrule regla2 = (Defrule) rete.findDefrule("recomendaciones");
+        System.out.println(new PrettyPrinter(regla2));
+
+        a.add(c);
+        a.setVisible(true);
+
+        rete.run();
+
+
+
     }
 
     @Override
